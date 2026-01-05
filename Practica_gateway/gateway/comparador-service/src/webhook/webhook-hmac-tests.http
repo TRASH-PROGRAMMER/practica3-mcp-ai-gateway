@@ -1,0 +1,311 @@
+### ============================================
+### 🔐 Tests de Firma HMAC para Webhooks
+### ============================================
+### Usa REST Client extension en VS Code
+### o copia los comandos curl para terminal
+
+@baseUrl = http://localhost:3002
+@webhookSecret = default-secret-key
+
+### --------------------------------------------
+### 1. Health Check del Servicio de Webhooks
+### --------------------------------------------
+GET {{baseUrl}}/webhook/health
+Content-Type: application/json
+
+### --------------------------------------------
+### 2. Generar Firma HMAC (Helper)
+### --------------------------------------------
+### Este endpoint genera la firma para un payload dado
+### Útil para obtener firmas válidas para testing
+
+POST {{baseUrl}}/webhook/generate-signature
+Content-Type: application/json
+
+{
+  "event_type": "prescripcion.registrada",
+  "event_id": "prescripcion-123-1734234567890",
+  "timestamp": "2025-12-15T10:30:00.000Z",
+  "version": "1.0.0",
+  "source": "comparador-service",
+  "data": {
+    "id_prescripcion": 123,
+    "id_paciente": 456,
+    "nombre_paciente": "Juan Pérez",
+    "id_medico": 789,
+    "nombre_medico": "Dra. María García",
+    "diagnostico": "Hipertensión arterial",
+    "medicamentos": [
+      {
+        "id_producto": 101,
+        "nombre_comercial": "Losartán 50mg",
+        "dosis": "1 tableta",
+        "frecuencia": "cada 12 horas",
+        "duracion_dias": 30
+      }
+    ],
+    "fecha_emision": "2025-12-15T10:30:00.000Z",
+    "estado": "activa"
+  }
+}
+
+### --------------------------------------------
+### 3. Test: Webhook CON Firma VÁLIDA
+### --------------------------------------------
+### Este test debe retornar 200 OK
+
+# @name validWebhook
+POST {{baseUrl}}/webhook/prescripcion
+Content-Type: application/json
+X-Webhook-Signature: sha256=7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f
+X-Webhook-Timestamp: 1734259800000
+X-Event-ID: prescripcion-123-1734234567890
+
+{
+  "event_type": "prescripcion.registrada",
+  "event_id": "prescripcion-123-1734234567890",
+  "timestamp": "2025-12-15T10:30:00.000Z",
+  "version": "1.0.0",
+  "source": "comparador-service",
+  "data": {
+    "id_prescripcion": 123,
+    "id_paciente": 456,
+    "nombre_paciente": "Juan Pérez",
+    "id_medico": 789,
+    "nombre_medico": "Dra. María García",
+    "diagnostico": "Hipertensión arterial",
+    "medicamentos": [
+      {
+        "id_producto": 101,
+        "nombre_comercial": "Losartán 50mg",
+        "dosis": "1 tableta",
+        "frecuencia": "cada 12 horas",
+        "duracion_dias": 30
+      }
+    ],
+    "fecha_emision": "2025-12-15T10:30:00.000Z",
+    "estado": "activa"
+  }
+}
+
+### --------------------------------------------
+### 4. Test: Webhook SIN Firma (debe fallar)
+### --------------------------------------------
+### Este test debe retornar 401 Unauthorized
+
+POST {{baseUrl}}/webhook/prescripcion
+Content-Type: application/json
+X-Event-ID: prescripcion-124-1734234567891
+
+{
+  "event_type": "prescripcion.registrada",
+  "event_id": "prescripcion-124-1734234567891",
+  "timestamp": "2025-12-15T10:31:00.000Z",
+  "version": "1.0.0",
+  "source": "comparador-service",
+  "data": {
+    "id_prescripcion": 124,
+    "id_paciente": 457,
+    "nombre_paciente": "Ana López",
+    "id_medico": 789,
+    "nombre_medico": "Dra. María García",
+    "diagnostico": "Diabetes tipo 2",
+    "medicamentos": [],
+    "fecha_emision": "2025-12-15T10:31:00.000Z",
+    "estado": "activa"
+  }
+}
+
+### --------------------------------------------
+### 5. Test: Webhook con Firma INVÁLIDA
+### --------------------------------------------
+### Este test debe retornar 401 Unauthorized
+
+POST {{baseUrl}}/webhook/prescripcion
+Content-Type: application/json
+X-Webhook-Signature: sha256=invalidfirma1234567890abcdefghijklmnopqrstuvwxyz
+X-Webhook-Timestamp: 1734259800000
+X-Event-ID: prescripcion-125-1734234567892
+
+{
+  "event_type": "prescripcion.registrada",
+  "event_id": "prescripcion-125-1734234567892",
+  "timestamp": "2025-12-15T10:32:00.000Z",
+  "version": "1.0.0",
+  "source": "comparador-service",
+  "data": {
+    "id_prescripcion": 125,
+    "id_paciente": 458,
+    "nombre_paciente": "Carlos Ramírez",
+    "id_medico": 789,
+    "nombre_medico": "Dra. María García",
+    "diagnostico": "Gripe",
+    "medicamentos": [],
+    "fecha_emision": "2025-12-15T10:32:00.000Z",
+    "estado": "activa"
+  }
+}
+
+### --------------------------------------------
+### 6. Test: Webhook con Timestamp Expirado
+### --------------------------------------------
+### Este test debe retornar 401 Unauthorized
+### (timestamp de hace más de 5 minutos)
+
+POST {{baseUrl}}/webhook/prescripcion
+Content-Type: application/json
+X-Webhook-Signature: sha256=7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f
+X-Webhook-Timestamp: 1734200000000
+X-Event-ID: prescripcion-126-1734234567893
+
+{
+  "event_type": "prescripcion.registrada",
+  "event_id": "prescripcion-126-1734234567893",
+  "timestamp": "2025-12-15T09:00:00.000Z",
+  "version": "1.0.0",
+  "source": "comparador-service",
+  "data": {
+    "id_prescripcion": 126,
+    "id_paciente": 459,
+    "nombre_paciente": "Laura Martínez",
+    "id_medico": 789,
+    "nombre_medico": "Dra. María García",
+    "diagnostico": "Asma",
+    "medicamentos": [],
+    "fecha_emision": "2025-12-15T09:00:00.000Z",
+    "estado": "activa"
+  }
+}
+
+### --------------------------------------------
+### 7. Test: Webhook Duplicado (Idempotencia)
+### --------------------------------------------
+### Enviar el mismo evento dos veces
+### Primera vez: 200 OK
+### Segunda vez: 200 OK con status "duplicate"
+
+POST {{baseUrl}}/webhook/prescripcion
+Content-Type: application/json
+X-Webhook-Signature: sha256=7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f
+X-Webhook-Timestamp: 1734259800000
+X-Event-ID: prescripcion-127-1734234567894
+
+{
+  "event_type": "prescripcion.registrada",
+  "event_id": "prescripcion-127-1734234567894",
+  "timestamp": "2025-12-15T10:33:00.000Z",
+  "version": "1.0.0",
+  "source": "comparador-service",
+  "data": {
+    "id_prescripcion": 127,
+    "id_paciente": 460,
+    "nombre_paciente": "Pedro Sánchez",
+    "id_medico": 789,
+    "nombre_medico": "Dra. María García",
+    "diagnostico": "Migraña",
+    "medicamentos": [],
+    "fecha_emision": "2025-12-15T10:33:00.000Z",
+    "estado": "activa"
+  }
+}
+
+### --------------------------------------------
+### 8. Test: Webhook de Comparación
+### --------------------------------------------
+
+POST {{baseUrl}}/webhook/comparacion
+Content-Type: application/json
+X-Webhook-Signature: sha256=9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b
+X-Webhook-Timestamp: 1734259800000
+X-Event-ID: comparacion-456-1734234567895
+
+{
+  "event_type": "comparacion.realizada",
+  "event_id": "comparacion-456-1734234567895",
+  "timestamp": "2025-12-15T10:34:00.000Z",
+  "version": "1.0.0",
+  "source": "comparador-service",
+  "data": {
+    "id_comparacion": 456,
+    "id_producto": 101,
+    "nombre_producto": "Losartán 50mg",
+    "id_usuario": 123,
+    "farmacias_comparadas": 5,
+    "precio_min": 15.50,
+    "precio_max": 25.00,
+    "precio_promedio": 19.75,
+    "ahorro_potencial": 38.0,
+    "fecha_comparacion": "2025-12-15T10:34:00.000Z"
+  }
+}
+
+### --------------------------------------------
+### 9. Test: Payload Inválido (sin event_type)
+### --------------------------------------------
+### Este test debe retornar 400 Bad Request
+
+POST {{baseUrl}}/webhook/prescripcion
+Content-Type: application/json
+X-Webhook-Signature: sha256=7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f
+X-Webhook-Timestamp: 1734259800000
+X-Event-ID: prescripcion-128-1734234567896
+
+{
+  "event_id": "prescripcion-128-1734234567896",
+  "timestamp": "2025-12-15T10:35:00.000Z",
+  "data": {
+    "id_prescripcion": 128
+  }
+}
+
+### --------------------------------------------
+### 10. Test: Tipo de Evento Incorrecto
+### --------------------------------------------
+### Enviar evento de comparación al endpoint de prescripción
+### Este test debe retornar 400 Bad Request
+
+POST {{baseUrl}}/webhook/prescripcion
+Content-Type: application/json
+X-Webhook-Signature: sha256=7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f
+X-Webhook-Timestamp: 1734259800000
+X-Event-ID: comparacion-999-1734234567897
+
+{
+  "event_type": "comparacion.realizada",
+  "event_id": "comparacion-999-1734234567897",
+  "timestamp": "2025-12-15T10:36:00.000Z",
+  "version": "1.0.0",
+  "source": "comparador-service",
+  "data": {
+    "id_comparacion": 999
+  }
+}
+
+### ============================================
+### 📝 Notas para Testing Manual
+### ============================================
+
+###
+### Para obtener una firma válida:
+### 1. Ejecuta el request "2. Generar Firma HMAC (Helper)"
+### 2. Copia la firma generada en el campo "signature"
+### 3. Usa esa firma en el header X-Webhook-Signature
+###
+
+###
+### CURL Examples:
+###
+
+# Test con firma válida (primero genera la firma)
+# curl -X POST http://localhost:3002/webhook/prescripcion \
+#   -H "Content-Type: application/json" \
+#   -H "X-Webhook-Signature: sha256=FIRMA_GENERADA_AQUI" \
+#   -H "X-Webhook-Timestamp: 1734259800000" \
+#   -H "X-Event-ID: test-123" \
+#   -d '{"event_type":"prescripcion.registrada","event_id":"test-123","data":{}}'
+
+# Test sin firma (debe fallar)
+# curl -X POST http://localhost:3002/webhook/prescripcion \
+#   -H "Content-Type: application/json" \
+#   -H "X-Event-ID: test-456" \
+#   -d '{"event_type":"prescripcion.registrada","event_id":"test-456","data":{}}'

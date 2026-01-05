@@ -1,0 +1,31 @@
+version: '3.9'
+
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: user
+      RABBITMQ_DEFAULT_PASS: pass
+    networks:
+      - salumedx-net
+
+  comparador-service:
+    build: .
+    container_name: comparador-service
+    depends_on:
+      - rabbitmq
+    environment:
+      - RABBITMQ_URL=amqp://user:pass@rabbitmq:5672
+      - NODE_ENV=production
+    ports:
+      - "3001:3001"
+    networks:
+      - salumedx-net
+
+networks:
+  salumedx-net:
+    driver: bridge

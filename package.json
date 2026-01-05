@@ -1,0 +1,10 @@
+{
+  "devDependencies": {
+    "@types/node": "^25.0.2",
+    "supabase": "^2.67.1"
+  },
+  "dependencies": {
+    "@nestjs/schedule": "^6.1.0",
+    "uuid": "^13.0.0"
+  }
+}
