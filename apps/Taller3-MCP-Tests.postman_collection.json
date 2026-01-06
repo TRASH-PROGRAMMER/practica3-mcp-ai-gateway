@@ -1,0 +1,259 @@
+{
+  "info": {
+    "name": "Taller 3 - MCP + IA Tests",
+    "description": "Colección de pruebas para el sistema MCP con Gemini AI",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "API Gateway (Puerto 3000)",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/productos/health",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["productos", "health"]
+            }
+          }
+        },
+        {
+          "name": "Listar Tools Disponibles",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/productos/tools",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["productos", "tools"]
+            }
+          }
+        },
+        {
+          "name": "Chat - Búsqueda Simple",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"message\": \"Busca productos con ibuprofeno\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/productos/chat",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["productos", "chat"]
+            }
+          }
+        },
+        {
+          "name": "Chat - Validar Prescripción",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"message\": \"Valida si la prescripción número 1 está activa\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/productos/chat",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["productos", "chat"]
+            }
+          }
+        },
+        {
+          "name": "Chat - Comparación de Productos",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"message\": \"Compara el producto 1 con el producto 2 según precio\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/productos/chat",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["productos", "chat"]
+            }
+          }
+        },
+        {
+          "name": "Chat - Flujo Completo",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"message\": \"Busca ibuprofeno, valida la prescripción 1, y si está activa compáralo con paracetamol por efectividad\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/productos/chat",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["productos", "chat"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "MCP Server (Puerto 3001)",
+      "item": [
+        {
+          "name": "Info del Servidor",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3001/",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3001",
+              "path": [""]
+            }
+          }
+        },
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3001/health",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3001",
+              "path": ["health"]
+            }
+          }
+        },
+        {
+          "name": "RPC - Listar Tools",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"jsonrpc\": \"2.0\",\n  \"method\": \"tools/list\",\n  \"id\": 1\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3001/rpc",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3001",
+              "path": ["rpc"]
+            }
+          }
+        },
+        {
+          "name": "RPC - Ejecutar buscar_producto",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"jsonrpc\": \"2.0\",\n  \"method\": \"tools/execute\",\n  \"params\": {\n    \"name\": \"buscar_producto\",\n    \"params\": {\n      \"query\": \"ibuprofeno\"\n    }\n  },\n  \"id\": 2\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3001/rpc",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3001",
+              "path": ["rpc"]
+            }
+          }
+        },
+        {
+          "name": "RPC - Ejecutar validar_prescripcion",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"jsonrpc\": \"2.0\",\n  \"method\": \"tools/execute\",\n  \"params\": {\n    \"name\": \"validar_prescripcion\",\n    \"params\": {\n      \"idPrescripcion\": 1\n    }\n  },\n  \"id\": 3\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3001/rpc",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3001",
+              "path": ["rpc"]
+            }
+          }
+        },
+        {
+          "name": "RPC - Ejecutar crear_comparacion",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"jsonrpc\": \"2.0\",\n  \"method\": \"tools/execute\",\n  \"params\": {\n    \"name\": \"crear_comparacion\",\n    \"params\": {\n      \"idProducto1\": 1,\n      \"idProducto2\": 2,\n      \"criterio\": \"precio\"\n    }\n  },\n  \"id\": 4\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3001/rpc",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3001",
+              "path": ["rpc"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
