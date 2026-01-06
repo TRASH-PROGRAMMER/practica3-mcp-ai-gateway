@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MCP Chat AI - Sistema Farmacéutico</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="app">
+        <!-- Header con efectos neón -->
+        <header class="chat-header">
+            <div class="header-content">
+                <div class="logo-container">
+                    <div class="pulse-ring"></div>
+                    <div class="logo-icon">🤖</div>
+                </div>
+                <div class="header-info">
+                    <h1 class="neon-text">MCP Chat AI</h1>
+                    <p class="subtitle">Sistema Inteligente de Farmacia</p>
+                </div>
+                <div class="status-indicator">
+                    <div :class="['status-dot', statusClass]"></div>
+                    <span>{{ statusText }}</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Chat Container -->
+        <div class="chat-container">
+            <!-- Messages Area -->
+            <div class="messages-area" ref="messagesArea">
+                <!-- Welcome Message -->
+                <div v-if="messages.length === 0" class="welcome-screen">
+                    <div class="welcome-icon">💊</div>
+                    <h2 class="neon-text-purple">¡Bienvenido al Asistente Farmacéutico!</h2>
+                    <p>Pregúntame sobre productos, stock o comparaciones de precios</p>
+                    <div class="suggestions">
+                        <div class="suggestion-card" @click="sendSuggestion('Busca productos con paracetamol')">
+                            <span class="icon">🔍</span>
+                            <span>Buscar productos</span>
+                        </div>
+                        <div class="suggestion-card" @click="sendSuggestion('¿Hay 20 unidades del producto 1?')">
+                            <span class="icon">📦</span>
+                            <span>Verificar stock</span>
+                        </div>
+                        <div class="suggestion-card" @click="sendSuggestion('Crea una comparación para prescripción 1')">
+                            <span class="icon">💰</span>
+                            <span>Comparar precios</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Messages -->
+                <div v-for="(msg, index) in messages" :key="index" :class="['message', msg.type]">
+                    <div class="message-avatar" v-if="msg.type === 'bot'">
+                        <div class="avatar-glow">🤖</div>
+                    </div>
+                    <div class="message-content">
+                        <div class="message-bubble">
+                            <div v-if="msg.type === 'bot' && msg.loading" class="typing-indicator">
+                                <span></span>
+                                <span></span>
+                                <span></span>
+                            </div>
+                            <div v-else>
+                                <p v-html="formatMessage(msg.text)"></p>
+                                <div v-if="msg.tools && msg.tools.length > 0" class="tools-used">
+                                    <div class="tools-header">🔧 Herramientas usadas:</div>
+                                    <div class="tools-list">
+                                        <span v-for="tool in msg.tools" :key="tool.name" class="tool-badge">
+                                            {{ tool.name }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="message-time">{{ msg.time }}</div>
+                    </div>
+                    <div class="message-avatar" v-if="msg.type === 'user'">
+                        <div class="avatar-glow user">👤</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Input Area -->
+            <div class="input-area">
+                <div class="input-container">
+                    <button class="voice-btn" title="Comando de voz">
+                        <span class="pulse-dot"></span>
+                        🎤
+                    </button>
+                    <input 
+                        v-model="userInput" 
+                        @keyup.enter="sendMessage"
+                        type="text" 
+                        placeholder="Escribe tu consulta aquí..."
+                        :disabled="isLoading"
+                        class="message-input"
+                    >
+                    <button 
+                        @click="sendMessage" 
+                        :disabled="isLoading || !userInput.trim()"
+                        class="send-btn"
+                    >
+                        <span v-if="!isLoading">📤</span>
+                        <span v-else class="spinner"></span>
+                    </button>
+                </div>
+                <div class="quick-actions">
+                    <button @click="clearChat" class="action-btn">🗑️ Limpiar</button>
+                    <button @click="checkHealth" class="action-btn">💚 Estado</button>
+                    <button @click="showTools" class="action-btn">🔧 Herramientas</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tools Modal -->
+        <div v-if="showToolsModal" class="modal-overlay" @click="showToolsModal = false">
+            <div class="modal-content" @click.stop>
+                <div class="modal-header">
+                    <h2 class="neon-text">🔧 Herramientas Disponibles</h2>
+                    <button @click="showToolsModal = false" class="close-btn">✕</button>
+                </div>
+                <div class="modal-body">
+                    <div v-for="tool in availableTools" :key="tool.name" class="tool-card">
+                        <div class="tool-icon">⚙️</div>
+                        <div class="tool-info">
+                            <h3>{{ tool.name }}</h3>
+                            <p>{{ tool.description }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Particles Background -->
+        <div class="particles">
+            <div v-for="n in 20" :key="n" class="particle"></div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

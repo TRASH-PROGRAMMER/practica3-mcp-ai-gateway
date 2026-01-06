@@ -1,0 +1,32 @@
+# supabase/config.toml
+
+[api]
+port = 15431
+
+[db]
+# DB principal
+port = 15432
+# Shadow DB (lo usa db diff/migrations)
+shadow_port = 15430
+
+[studio]
+port = 15433
+
+[inbucket]
+port = 15434
+smtp_port = 15435
+pop3_port = 15436
+
+[analytics]
+port = 15437
+vector_port = 15438
+
+[db.pooler]
+port = 15439
+
+# (Opcional para webhooks)
+[functions.webhook-event-logger]
+verify_jwt = false
+
+[functions.webhook-external-notifier]
+verify_jwt = false

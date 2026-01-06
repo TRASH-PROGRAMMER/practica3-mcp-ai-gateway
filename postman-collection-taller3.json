@@ -1,0 +1,343 @@
+{
+  "info": {
+    "name": "Taller 3 - Sistema MCP + IA",
+    "_postman_id": "taller3-mcp-ia",
+    "description": "Colección de pruebas para el sistema MCP con Gemini AI",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Health Checks",
+      "item": [
+        {
+          "name": "API Gateway Health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/ia/health",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["ia", "health"]
+            },
+            "description": "Verifica el estado del API Gateway y la conexión con MCP Server"
+          }
+        },
+        {
+          "name": "MCP Server Health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3001/health",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3001",
+              "path": ["health"]
+            },
+            "description": "Verifica el estado del MCP Server"
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Tools Management",
+      "item": [
+        {
+          "name": "Listar Tools Disponibles",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/ia/tools",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["ia", "tools"]
+            },
+            "description": "Lista todos los tools disponibles en el MCP Server"
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Consultas Simples",
+      "item": [
+        {
+          "name": "Buscar Producto",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"message\": \"Busca productos con paracetamol\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/ia/query",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["ia", "query"]
+            }
+          }
+        },
+        {
+          "name": "Buscar por Principio Activo",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"message\": \"¿Qué productos tienen ibuprofeno?\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/ia/query",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["ia", "query"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Validación de Stock",
+      "item": [
+        {
+          "name": "Validar Stock Simple",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"message\": \"¿Hay 20 unidades del producto con ID 1?\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/ia/query",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["ia", "query"]
+            }
+          }
+        },
+        {
+          "name": "Validar Stock Alto",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"message\": \"Necesito 100 unidades del producto 5, verifica disponibilidad\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/ia/query",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["ia", "query"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Comparaciones",
+      "item": [
+        {
+          "name": "Crear Comparación",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"message\": \"Crea una comparación de precios para la prescripción 1\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/ia/query",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["ia", "query"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. Consultas Complejas (Multi-Tool)",
+      "item": [
+        {
+          "name": "Buscar y Validar Stock",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"message\": \"Busca amoxicilina 500mg y verifica si hay stock de 15 unidades\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/ia/query",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["ia", "query"]
+            }
+          }
+        },
+        {
+          "name": "Búsqueda Múltiple con Validación",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"message\": \"Lista todos los productos con aspirina, verifica el stock de cada uno para 30 unidades\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/ia/query",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["ia", "query"]
+            }
+          }
+        },
+        {
+          "name": "Workflow Completo",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"message\": \"Busca productos con ibuprofeno, verifica que tengan al menos 20 unidades y crea una comparación para la prescripción 2\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/ia/query",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["ia", "query"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "7. Casos Edge",
+      "item": [
+        {
+          "name": "Producto No Existente",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"message\": \"Busca producto XXXNOEXISTEXXX\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/ia/query",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["ia", "query"]
+            }
+          }
+        },
+        {
+          "name": "Consulta Conversacional",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"message\": \"Hola, ¿qué puedes hacer?\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/ia/query",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["ia", "query"]
+            }
+          }
+        },
+        {
+          "name": "Consulta Ambigua",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"message\": \"Ayúdame con medicamentos\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/ia/query",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["ia", "query"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,60 @@
+# docker-compose.yml
+version: '3.9'
+
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: user
+      RABBITMQ_DEFAULT_PASS: pass
+    networks:
+      - salumedx-net
+
+  productos-service:
+    build: ./productos-service
+    container_name: productos-service
+    depends_on:
+      - rabbitmq
+    environment:
+      - RABBITMQ_URL=amqp://user:pass@rabbitmq:5672
+      - NODE_ENV=production
+    ports:
+      - "3001:3001"
+    networks:
+      - salumedx-net
+
+  comparador-service:
+    build: ./comparador-service
+    container_name: comparador-service
+    depends_on:
+      - rabbitmq
+    environment:
+      - RABBITMQ_URL=amqp://user:pass@rabbitmq:5672
+      - NODE_ENV=production
+    ports:
+      - "3002:3002"
+    networks:
+      - salumedx-net
+
+  api-gateway:
+    build: ./gateway
+    container_name: api-gateway
+    depends_on:
+      - productos-service
+      - comparador-service
+    environment:
+      - PRODUCTOS_URL=http://productos-service:3001
+      - COMPARADOR_URL=http://comparador-service:3002
+      - NODE_ENV=production
+    ports:
+      - "3000:3000"
+    networks:
+      - salumedx-net
+
+networks:
+  salumedx-net:
+    driver: bridge

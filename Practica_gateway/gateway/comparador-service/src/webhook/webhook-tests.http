@@ -1,0 +1,389 @@
+### Tests de Webhooks
+### Usar con REST Client (VS Code extension)
+
+@baseUrl = http://localhost:3002
+@webhookSecret = secret-key
+
+###############################################
+# 1. Health Check
+###############################################
+
+### Health check
+POST {{baseUrl}}/webhook/health
+Content-Type: application/json
+
+
+###############################################
+# 2. Webhook: prescripcion.registrada
+###############################################
+
+### Test exitoso - Prescripción registrada
+POST {{baseUrl}}/webhook/prescripcion
+Content-Type: application/json
+X-Webhook-Signature: sha256=abc123def456
+X-Event-ID: prescripcion-123-1734234567890
+
+{
+  "event_type": "prescripcion.registrada",
+  "event_id": "prescripcion-123-1734234567890",
+  "timestamp": "2025-12-15T10:30:00.000Z",
+  "version": "1.0.0",
+  "source": "comparador-service",
+  "data": {
+    "id_prescripcion": 123,
+    "id_paciente": 456,
+    "nombre_paciente": "Juan Pérez García",
+    "id_medico": 789,
+    "nombre_medico": "Dra. María González López",
+    "diagnostico": "Hipertensión arterial sistémica",
+    "medicamentos": [
+      {
+        "id_producto": 1,
+        "nombre_comercial": "Losartán 50mg",
+        "dosis": "1 tableta",
+        "frecuencia": "cada 12 horas",
+        "duracion_dias": 30
+      },
+      {
+        "id_producto": 15,
+        "nombre_comercial": "Hidroclorotiazida 25mg",
+        "dosis": "1 tableta",
+        "frecuencia": "cada 24 horas",
+        "duracion_dias": 30
+      }
+    ],
+    "fecha_emision": "2025-12-15T10:30:00.000Z",
+    "estado": "activa"
+  },
+  "metadata": {
+    "correlation_id": "session-abc123",
+    "user_id": 789,
+    "ip_address": "192.168.1.100"
+  }
+}
+
+### Test - Prescripción con un solo medicamento
+POST {{baseUrl}}/webhook/prescripcion
+Content-Type: application/json
+X-Webhook-Signature: sha256=xyz789
+X-Event-ID: prescripcion-124-1734234567891
+
+{
+  "event_type": "prescripcion.registrada",
+  "event_id": "prescripcion-124-1734234567891",
+  "timestamp": "2025-12-15T11:00:00.000Z",
+  "version": "1.0.0",
+  "source": "comparador-service",
+  "data": {
+    "id_prescripcion": 124,
+    "id_paciente": 500,
+    "nombre_paciente": "María López",
+    "id_medico": 800,
+    "nombre_medico": "Dr. Carlos Ramírez",
+    "diagnostico": "Dolor lumbar agudo",
+    "medicamentos": [
+      {
+        "id_producto": 25,
+        "nombre_comercial": "Ibuprofeno 600mg",
+        "dosis": "1 tableta",
+        "frecuencia": "cada 8 horas",
+        "duracion_dias": 5
+      }
+    ],
+    "fecha_emision": "2025-12-15T11:00:00.000Z",
+    "estado": "activa"
+  }
+}
+
+### Test error - Payload inválido (falta campo requerido)
+POST {{baseUrl}}/webhook/prescripcion
+Content-Type: application/json
+X-Event-ID: prescripcion-invalid-1
+
+{
+  "event_type": "prescripcion.registrada",
+  "event_id": "prescripcion-invalid-1",
+  "timestamp": "2025-12-15T11:00:00.000Z"
+  // Falta el campo "data"
+}
+
+### Test error - Tipo de evento incorrecto
+POST {{baseUrl}}/webhook/prescripcion
+Content-Type: application/json
+X-Event-ID: prescripcion-wrong-type-1
+
+{
+  "event_type": "comparacion.realizada",
+  "event_id": "prescripcion-wrong-type-1",
+  "timestamp": "2025-12-15T11:00:00.000Z",
+  "version": "1.0.0",
+  "source": "comparador-service",
+  "data": {}
+}
+
+
+###############################################
+# 3. Webhook: comparacion.realizada
+###############################################
+
+### Test exitoso - Comparación realizada
+POST {{baseUrl}}/webhook/comparacion
+Content-Type: application/json
+X-Webhook-Signature: sha256=def456ghi789
+X-Event-ID: comparacion-456-1734234567890
+
+{
+  "event_type": "comparacion.realizada",
+  "event_id": "comparacion-456-1734234567890",
+  "timestamp": "2025-12-15T11:15:00.000Z",
+  "version": "1.0.0",
+  "source": "comparador-service",
+  "data": {
+    "id_comparacion": 456,
+    "id_producto": 1,
+    "nombre_producto": "Losartán 50mg x 30 tabletas",
+    "id_usuario": 789,
+    "resultados": [
+      {
+        "farmacia": "Farmacia Central",
+        "precio": 95.50,
+        "stock_disponible": true,
+        "descuento": 5,
+        "ubicacion": {
+          "direccion": "Av. Principal 123",
+          "latitud": -12.0464,
+          "longitud": -77.0428
+        }
+      },
+      {
+        "farmacia": "Farmacia del Ahorro",
+        "precio": 105.00,
+        "stock_disponible": true,
+        "descuento": 0,
+        "ubicacion": {
+          "direccion": "Calle Secundaria 456",
+          "latitud": -12.0500,
+          "longitud": -77.0500
+        }
+      },
+      {
+        "farmacia": "Farmacia San Pablo",
+        "precio": 100.00,
+        "stock_disponible": false,
+        "descuento": 0,
+        "ubicacion": {
+          "direccion": "Av. Los Olivos 789",
+          "latitud": -12.0550,
+          "longitud": -77.0550
+        }
+      }
+    ],
+    "precio_min": 95.50,
+    "precio_max": 105.00,
+    "ahorro_potencial": 9.50,
+    "total_farmacias": 3,
+    "fecha_comparacion": "2025-12-15T11:15:00.000Z"
+  },
+  "metadata": {
+    "correlation_id": "search-xyz789",
+    "user_id": 789,
+    "ip_address": "192.168.1.105"
+  }
+}
+
+### Test - Comparación con ahorro significativo (>$30)
+POST {{baseUrl}}/webhook/comparacion
+Content-Type: application/json
+X-Webhook-Signature: sha256=jkl012mno345
+X-Event-ID: comparacion-457-1734234567891
+
+{
+  "event_type": "comparacion.realizada",
+  "event_id": "comparacion-457-1734234567891",
+  "timestamp": "2025-12-15T11:30:00.000Z",
+  "version": "1.0.0",
+  "source": "comparador-service",
+  "data": {
+    "id_comparacion": 457,
+    "id_producto": 10,
+    "nombre_producto": "Amoxicilina 500mg x 21 cápsulas",
+    "id_usuario": 800,
+    "resultados": [
+      {
+        "farmacia": "Farmacia Económica",
+        "precio": 85.00,
+        "stock_disponible": true,
+        "descuento": 10
+      },
+      {
+        "farmacia": "Farmacia Premium",
+        "precio": 120.00,
+        "stock_disponible": true,
+        "descuento": 0
+      }
+    ],
+    "precio_min": 85.00,
+    "precio_max": 120.00,
+    "ahorro_potencial": 35.00,
+    "total_farmacias": 2,
+    "fecha_comparacion": "2025-12-15T11:30:00.000Z"
+  }
+}
+
+### Test - Comparación sin usuario (anónimo)
+POST {{baseUrl}}/webhook/comparacion
+Content-Type: application/json
+X-Webhook-Signature: sha256=pqr678stu901
+X-Event-ID: comparacion-458-1734234567892
+
+{
+  "event_type": "comparacion.realizada",
+  "event_id": "comparacion-458-1734234567892",
+  "timestamp": "2025-12-15T12:00:00.000Z",
+  "version": "1.0.0",
+  "source": "comparador-service",
+  "data": {
+    "id_comparacion": 458,
+    "id_producto": 5,
+    "nombre_producto": "Paracetamol 500mg x 20 tabletas",
+    "resultados": [
+      {
+        "farmacia": "Farmacia A",
+        "precio": 15.00,
+        "stock_disponible": true
+      },
+      {
+        "farmacia": "Farmacia B",
+        "precio": 18.00,
+        "stock_disponible": true
+      }
+    ],
+    "precio_min": 15.00,
+    "precio_max": 18.00,
+    "ahorro_potencial": 3.00,
+    "total_farmacias": 2,
+    "fecha_comparacion": "2025-12-15T12:00:00.000Z"
+  }
+}
+
+
+###############################################
+# 4. Webhook genérico (cualquier evento)
+###############################################
+
+### Test - Endpoint genérico con prescripción
+POST {{baseUrl}}/webhook/events
+Content-Type: application/json
+X-Webhook-Signature: sha256=generic123
+X-Event-Type: prescripcion.registrada
+
+{
+  "event_type": "prescripcion.registrada",
+  "event_id": "generic-prescripcion-1",
+  "timestamp": "2025-12-15T12:30:00.000Z",
+  "version": "1.0.0",
+  "source": "comparador-service",
+  "data": {
+    "id_prescripcion": 200,
+    "id_paciente": 100,
+    "nombre_paciente": "Test Generic",
+    "id_medico": 50,
+    "nombre_medico": "Dr. Generic",
+    "diagnostico": "Test",
+    "medicamentos": [
+      {
+        "id_producto": 1,
+        "nombre_comercial": "Test Med",
+        "dosis": "1",
+        "frecuencia": "diaria",
+        "duracion_dias": 7
+      }
+    ],
+    "fecha_emision": "2025-12-15T12:30:00.000Z",
+    "estado": "activa"
+  }
+}
+
+### Test - Endpoint genérico con evento no soportado
+POST {{baseUrl}}/webhook/events
+Content-Type: application/json
+X-Webhook-Signature: sha256=unsupported123
+X-Event-Type: evento.no.soportado
+
+{
+  "event_type": "evento.no.soportado",
+  "event_id": "unsupported-event-1",
+  "timestamp": "2025-12-15T13:00:00.000Z",
+  "version": "1.0.0",
+  "source": "comparador-service",
+  "data": {}
+}
+
+
+###############################################
+# 5. Test de idempotencia (duplicados)
+###############################################
+
+### Primera llamada (debe procesarse)
+POST {{baseUrl}}/webhook/prescripcion
+Content-Type: application/json
+X-Event-ID: idempotent-test-1
+
+{
+  "event_type": "prescripcion.registrada",
+  "event_id": "idempotent-test-1",
+  "timestamp": "2025-12-15T13:30:00.000Z",
+  "version": "1.0.0",
+  "source": "comparador-service",
+  "data": {
+    "id_prescripcion": 999,
+    "id_paciente": 1,
+    "nombre_paciente": "Test Idempotencia",
+    "id_medico": 1,
+    "nombre_medico": "Dr. Test",
+    "diagnostico": "Test",
+    "medicamentos": [
+      {
+        "id_producto": 1,
+        "nombre_comercial": "Test",
+        "dosis": "1",
+        "frecuencia": "diaria",
+        "duracion_dias": 7
+      }
+    ],
+    "fecha_emision": "2025-12-15T13:30:00.000Z",
+    "estado": "activa"
+  }
+}
+
+### Segunda llamada con mismo event_id (debe ignorarse)
+POST {{baseUrl}}/webhook/prescripcion
+Content-Type: application/json
+X-Event-ID: idempotent-test-1
+
+{
+  "event_type": "prescripcion.registrada",
+  "event_id": "idempotent-test-1",
+  "timestamp": "2025-12-15T13:30:00.000Z",
+  "version": "1.0.0",
+  "source": "comparador-service",
+  "data": {
+    "id_prescripcion": 999,
+    "id_paciente": 1,
+    "nombre_paciente": "Test Idempotencia",
+    "id_medico": 1,
+    "nombre_medico": "Dr. Test",
+    "diagnostico": "Test",
+    "medicamentos": [
+      {
+        "id_producto": 1,
+        "nombre_comercial": "Test",
+        "dosis": "1",
+        "frecuencia": "diaria",
+        "duracion_dias": 7
+      }
+    ],
+    "fecha_emision": "2025-12-15T13:30:00.000Z",
+    "estado": "activa"
+  }
+}
